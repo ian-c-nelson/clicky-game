@@ -7,7 +7,6 @@ function GameCard(props) {
                 <div className="card-image">
                     <figure className="image is-4by3">
                         <img src={props.image} alt={props.alt} onClick={() => {
-                            console.log(props);
                             props.handleImageClick(props.id);
                         }} />
                     </figure>

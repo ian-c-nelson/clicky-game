@@ -2,6 +2,7 @@ import React from "react";
 import Header from "../Header";
 import GameCard from "../GameCard";
 import Footer from "../Footer";
+import Modal from "../Modal";
 import _ from "lodash";
 import startData from "../../data.json";
 
@@ -9,19 +10,32 @@ class Game extends React.Component {
     constructor() {
         super();
         this.state = {
-            data: _.shuffle(startData),
+            data: this.getFreshData(), 
             score: 0,
-            topScore: 0
+            topScore: 0,
+            modalState: {
+                show: false,
+                title: "Nice try!",
+                msg: "You clicked that one before! Start again and try to beat your high score!",
+            }
         }
     }
 
+    getFreshData = () => {
+        let data = startData.map(item => {
+            item.clicked = false;
+            return item;
+        });
+
+       return _.shuffle(data);
+    }
+
     handleImageClick = (id) => {
-        let { score, topScore, data } = this.state;
+        let { score, topScore, data, modalState } = this.state;
         const index = data.findIndex(item => item.id === id);
 
-        console.log(id, index);
-
         if (!data[index].clicked) {
+            modalState.show = false;
             data[index].clicked = true;
             score++;
             if (score > topScore) {
@@ -29,14 +43,23 @@ class Game extends React.Component {
             }
         } else {
             score = 0;
-            data = startData;
+            modalState.show = true;
         }
+
 
         this.setState({ score, topScore, data: _.shuffle(data) });
     }
 
+    handleModalOkayClick = () => {
+        let { modalState, data } = this.state;
+        modalState.show = false;
+        data = this.getFreshData();
+        this.setState({ modalState, data });
+    }
+
     render() {
-        const { data, score, topScore } = this.state;
+        const { data, score, topScore, modalState } = this.state;
+
         return (
             <div>
                 <Header score={score} topScore={topScore} />
@@ -47,13 +70,7 @@ class Game extends React.Component {
                         </div>
                     </div>
                 </section>
-                <div class="modal">
-                    <div class="modal-background"></div>
-                    <div class="modal-content">
-                        <p>Nice try! Now try and beat your top score!</p>
-                    </div>
-                    <button class="modal-close is-large" aria-label="close"></button>
-                </div>
+                <Modal {...modalState} handleModalOkayClick={this.handleModalOkayClick} />
                 <Footer />
             </div>
         )
